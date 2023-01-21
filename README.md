@@ -27,14 +27,23 @@ receive()               //Needed since there will be inter-contract money transf
 ### **So what `attack()` function does is basically as follows:**
 
 **1.** It calls vault's `setBase(address of Attack contract)`
+
 **2.** This will trigger vault's `fallback()`
+
 **3**. Due to Attack contract having the same storage layout as vault, the very first element of vault (which is `numberLibrary`) will be replaced with the address of Attack contract
+
 **4.** From now on, Attack contract can act as if its the `numberLibrary` of the vault
+
 **5**. Then it calls vault's `setBase(<anything>)`
+
 **6.** This will trigger vault's `fallback()` again
+
 **7.** Since our Attack contract was acting as if it is vault's `numberLibrary`, vault's triggered `fallback()` will call Attack's `setBase()`
+
 **8.** This will set `owner = address(Attack contract)`
+
 **9.** After taking over the ownership of vault, `attack()` will call `withdraw()` function of victim. But this won't transfer any money to Attack contract because of `currentNumber` being zero
+
 **10.** Nevertheless, Attack contract also had custom `getNumber()` function. So `withdraw()` function will call `getNumber()` of Attack contract. This custom function will transfer all money from vault to Attack contract (`receive()` function works here)
 
 In the end, you can transfer all money from Attack contract to your personal address by calling `collect()`.
